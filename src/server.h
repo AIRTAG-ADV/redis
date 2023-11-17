@@ -1308,7 +1308,7 @@ struct sentinelConfig {
 };
 
 struct sharedObjectsStruct {
-    robj *ok, *err, *emptybulk, *czero, *cone, *pong, *space,
+    robj *ok, *err, *emptybulk, *czero, *cone, *pong, *pung, *space,
     *queued, *null[4], *nullarray[4], *emptymap[4], *emptyset[4],
     *emptyarray, *wrongtypeerr, *nokeyerr, *syntaxerr, *sameobjecterr,
     *outofrangeerr, *noscripterr, *loadingerr,
@@ -1320,7 +1320,7 @@ struct sharedObjectsStruct {
     *emptyscan, *multi, *exec, *left, *right, *hset, *srem, *xgroup, *xclaim,  
     *script, *replconf, *eval, *persist, *set, *pexpireat, *pexpire, 
     *time, *pxat, *absttl, *retrycount, *force, *justid, *entriesread,
-    *lastid, *ping, *setid, *keepttl, *load, *createconsumer,
+    *lastid, *ping, *pang, *setid, *keepttl, *load, *createconsumer,
     *getack, *special_asterick, *special_equals, *default_username, *redacted,
     *ssubscribebulk,*sunsubscribebulk, *smessagebulk,
     *select[PROTO_SHARED_SELECT_CMDS],
@@ -3432,6 +3432,7 @@ char *redisBuildIdString(void);
 /* Commands prototypes */
 void authCommand(client *c);
 void pingCommand(client *c);
+void pangCommand(client *c);
 void echoCommand(client *c);
 void commandCommand(client *c);
 void commandCountCommand(client *c);

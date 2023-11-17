@@ -1829,6 +1829,7 @@ void createSharedObjects(void) {
     shared.cone = createObject(OBJ_STRING,sdsnew(":1\r\n"));
     shared.emptyarray = createObject(OBJ_STRING,sdsnew("*0\r\n"));
     shared.pong = createObject(OBJ_STRING,sdsnew("+PONG\r\n"));
+    shared.pung = createObject(OBJ_STRING,sdsnew("+PUNG\r\n"));
     shared.queued = createObject(OBJ_STRING,sdsnew("+QUEUED\r\n"));
     shared.emptyscan = createObject(OBJ_STRING,sdsnew("*2\r\n$1\r\n0\r\n*0\r\n"));
     shared.space = createObject(OBJ_STRING,sdsnew(" "));
@@ -1951,6 +1952,7 @@ void createSharedObjects(void) {
     shared.lastid = createStringObject("LASTID",6);
     shared.default_username = createStringObject("default",7);
     shared.ping = createStringObject("ping",4);
+    shared.pang = createStringObject("pang",4);
     shared.setid = createStringObject("SETID",5);
     shared.keepttl = createStringObject("KEEPTTL",7);
     shared.absttl = createStringObject("ABSTTL",6);
@@ -4022,10 +4024,10 @@ int processCommand(client *c) {
      * disk write error config to either log or crash. */
     int deny_write_type = writeCommandsDeniedByDiskError();
     if (deny_write_type != DISK_ERROR_TYPE_NONE &&
-        (is_write_command || c->cmd->proc == pingCommand))
+        (is_write_command || c->cmd->proc == pingCommand || c->cmd->proc == pangCommand))
     {
         if (obey_client) {
-            if (!server.repl_ignore_disk_write_error && c->cmd->proc != pingCommand) {
+            if (!server.repl_ignore_disk_write_error && c->cmd->proc != pingCommand && c->cmd->proc != pangCommand) {
                 serverPanic("Replica was unable to write command to disk.");
             } else {
                 static mstime_t last_log_time_ms = 0;
@@ -4066,6 +4068,7 @@ int processCommand(client *c) {
      * connection is in RESP2 mode. With RESP3 there are no limits. */
     if ((c->flags & CLIENT_PUBSUB && c->resp == 2) &&
         c->cmd->proc != pingCommand &&
+        c->cmd->proc != pangCommand &&
         c->cmd->proc != subscribeCommand &&
         c->cmd->proc != ssubscribeCommand &&
         c->cmd->proc != unsubscribeCommand &&
@@ -4076,7 +4079,7 @@ int processCommand(client *c) {
         c->cmd->proc != resetCommand) {
         rejectCommandFormat(c,
             "Can't execute '%s': only (P|S)SUBSCRIBE / "
-            "(P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in this context",
+            "(P|S)UNSUBSCRIBE / PING / PANG / QUIT / RESET are allowed in this context",
             c->cmd->fullname);
         return C_OK;
     }
@@ -4523,6 +4526,30 @@ void pingCommand(client *c) {
     } else {
         if (c->argc == 1)
             addReply(c,shared.pong);
+        else
+            addReplyBulk(c,c->argv[1]);
+    }
+}
+
+/* The PANG command. It works in a different way if the client is in
+ * in Pub/Sub mode. */
+void pangCommand(client *c) {
+    /* The command takes zero or one arguments. */
+    if (c->argc > 2) {
+        addReplyErrorArity(c);
+        return;
+    }
+
+    if (c->flags & CLIENT_PUBSUB && c->resp == 2) {
+        addReply(c,shared.mbulkhdr[2]);
+        addReplyBulkCBuffer(c,"pung",4);
+        if (c->argc == 1)
+            addReplyBulkCBuffer(c,"",0);
+        else
+            addReplyBulk(c,c->argv[1]);
+    } else {
+        if (c->argc == 1)
+            addReply(c,shared.pung);
         else
             addReplyBulk(c,c->argv[1]);
     }
