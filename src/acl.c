@@ -84,6 +84,7 @@ struct ACLCategoryItem {
     {"connection", ACL_CATEGORY_CONNECTION},
     {"transaction", ACL_CATEGORY_TRANSACTION},
     {"scripting", ACL_CATEGORY_SCRIPTING},
+    {"bstree", ACL_CATEGORY_BSTREE},
     {NULL,0} /* Terminator. */
 };
 

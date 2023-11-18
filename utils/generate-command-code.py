@@ -34,6 +34,7 @@ GROUPS = {
     "geo": "COMMAND_GROUP_GEO",
     "stream": "COMMAND_GROUP_STREAM",
     "bitmap": "COMMAND_GROUP_BITMAP",
+    "bstree": "COMMAND_GROUP_BSTREE",
 }
 
 
@@ -596,7 +597,8 @@ const char *COMMAND_GROUP_STR[] = {
     "geo",
     "stream",
     "bitmap",
-    "module"
+    "module",
+    "bstree"
 };
 
 const char *commandGroupStr(int index) {
